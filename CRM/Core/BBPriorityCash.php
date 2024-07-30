@@ -2,7 +2,7 @@
 
 /**
  *
- * @package BBPriorityCash [after Dummy Payment Processor]
+ * @package BBPriorityCash [after AuthorizeNet Payment Processor]
  * @author Gregory Shilin <gshilin@gmail.com>
  */
 
@@ -13,57 +13,10 @@ require_once 'BBPriorityCashIPN.php';
 /**
  * BBPriorityCash payment processor
  */
-class CRM_Core_BBPriorityCash extends CRM_Core_Payment
-{
-    /**
-     * mode of operation: live or test
-     *
-     * @var object
-     */
+class CRM_Core_BBPriorityCash extends CRM_Core_Payment {
     protected $_mode = NULL;
+
     protected $_params = array();
-    protected $_doDirectPaymentResult = array();
-
-    function base64_url_encode($input)
-    {
-        return strtr(base64_encode($input), '+/', '-_');
-    }
-
-    function base64_url_decode($input)
-    {
-        return base64_decode(strtr($input, '-_', '+/'));
-    }
-
-    /**
-     * Set result from do Direct Payment for test purposes.
-     *
-     * @param array $doDirectPaymentResult
-     *  Result to be returned from test.
-     */
-    public function setDoDirectPaymentResult($doDirectPaymentResult)
-    {
-        $this->_doDirectPaymentResult = $doDirectPaymentResult;
-        if (empty($this->_doDirectPaymentResult['trxn_id'])) {
-            $this->_doDirectPaymentResult['trxn_id'] = array();
-        } else {
-            $this->_doDirectPaymentResult['trxn_id'] = (array)$doDirectPaymentResult['trxn_id'];
-        }
-    }
-
-    /**
-     * We only need one instance of this object. So we use the singleton
-     * pattern and cache the instance in this variable
-     *
-     * @var object
-     * @static
-     */
-    static private $_singleton = NULL;
-    /**
-     * Payment Type Processor Name
-     *
-     * @var string
-     */
-    public $_processorName = null;
 
     /**
      * Constructor.
@@ -74,77 +27,10 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment
      * @param $paymentProcessor
      *
      */
-    public function __construct($mode, &$paymentProcessor)
-    {
+    public function __construct($mode, &$paymentProcessor) {
         $this->_mode = $mode;
         $this->_paymentProcessor = $paymentProcessor;
-        $this->_processorName = 'BB Payment Cash';
-    }
-
-    /**
-     * Singleton function used to manage this object
-     *
-     * @param string $mode the mode of operation: live or test
-     *
-     * @return object
-     * @static
-     *
-     */
-    static function &singleton($mode, &$paymentProcessor)
-    {
-        $processorName = $paymentProcessor["name"];
-        if (self::$_singleton[$processorName] === NULL) {
-            self::$_singleton[$processorName] = new self($mode, $paymentProcessor);
-        }
-        return self::$_singleton[$processorName];
-    }
-
-    /**
-     * Submit a payment using Advanced Integration Method.
-     *
-     * @param array $params
-     *   Assoc array of input parameters for this transaction.
-     *
-     * @return array
-     *   the result in a nice formatted array (or an error object)
-     */
-    public function doDirectPayment(&$params)
-    {
-        return NULL;
-    }
-
-    /**
-     * Are back office payments supported.
-     *
-     * E.g paypal standard won't permit you to enter a credit card associated with someone else's login.
-     *
-     * @return bool
-     */
-    protected function supportsLiveMode()
-    {
-        return TRUE;
-    }
-
-    /**
-     * Generate error object.
-     *
-     * Throwing exceptions is preferred over this.
-     *
-     * @param string $errorCode
-     * @param string $errorMessage
-     *
-     * @return CRM_Core_Error
-     *   Error object.
-     */
-    public function &error($errorCode = NULL, $errorMessage = NULL)
-    {
-        $e = CRM_Core_Error::singleton();
-        if ($errorCode) {
-            $e->push($errorCode, 0, NULL, $errorMessage);
-        } else {
-            $e->push(9001, 0, NULL, 'Unknown System Error.');
-        }
-        return $e;
+        $this->_setParam('processorName', 'BB Payment Cash');
     }
 
     /**
@@ -153,8 +39,7 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment
      * @return string
      *   the error message if any
      */
-    public function checkConfig()
-    {
+    public function checkConfig() {
         return NULL;
     }
 
@@ -183,13 +68,11 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment
      *
      * @return array
      */
-    public function getEditableRecurringScheduleFields()
-    {
+    public function getEditableRecurringScheduleFields() {
         return array('amount', 'next_sched_contribution_date');
     }
 
-    function doTransferCheckout(&$params, $component = 'contribute')
-    {
+    function doPayment(&$params, $component = 'contribute') {
         /* DEBUG
             echo "<pre>";
             var_dump($this->_paymentProcessor);
@@ -198,12 +81,14 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment
             exit();
         */
 
-        $config = CRM_Core_Config::singleton();
-
         if ($component != 'contribute' && $component != 'event') {
-            CRM_Core_Error::fatal(ts('Component is invalid'));
-            exit();
+            Civi::log()->error('bbprioritycc_payment_exception',
+                ['context' => [
+                    'message' => "Component '{$component}' is invalid."
+                ]]);
+            CRM_Utils_System::civiExit();
         }
+        $this->_component = $component;
 
         if (array_key_exists('webform_redirect_success', $params)) {
             $returnURL = $params['webform_redirect_success'];
@@ -239,7 +124,8 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment
             }
         }
 
-        $merchantUrl = $config->userFrameworkBaseURL . 'civicrm/payment/ipn?processor_name=BBPCash&mode=' . $this->_mode
+        global $base_url;
+        $merchantUrl = $base_url . '/civicrm/payment/ipn?processor_name=BBPCash&mode=' . $this->_mode
             . '&md=' . $component . '&qfKey=' . $params["qfKey"] . '&' . $merchantUrlParams
             . '&returnURL=' . $this->base64_url_encode($returnURL);
 
@@ -250,36 +136,33 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment
         CRM_Utils_System::civiExit();
     }
 
-    public function handlePaymentNotification()
-    {
-        $input = $ids = $objects = array();
-        $ipn = new CRM_Core_Payment_BBPriorityCashIPN();
+    public function handlePaymentNotification() {
+        $ipnClass = new CRM_Core_Payment_BBPriorityCashIPN(array_merge($_GET, $_REQUEST));
 
-        // load vars in $input, &ids
-        $ipn->getInput($input, $ids);
+        $input = $ids = array();
+        $ipnClass->getInput($input, $ids);
 
-        $paymentProcessorTypeID = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_PaymentProcessorType', $this->_processorName, 'id', 'name');
-        $paymentProcessorID = (int)civicrm_api3('PaymentProcessor', 'getvalue', array(
-            'is_test' => ($this->_mode == 'test') ? 1 : 0,
-            'options' => array('limit' => 1),
-            'payment_processor_type_id' => $paymentProcessorTypeID,
-            'return' => 'id',
-        ));
-        if (!$ipn->validateResult($this->_paymentProcessor, $input, $ids, $objects, TRUE, $paymentProcessorID)) {
-            // CRM_Core_Error::debug_log_message("bbpriorityCash Validation failed");
-            echo("bbpriorityCash Validation failed");
-            exit();
-        }
+        $ipnClass->main($this->_paymentProcessor, $input, $ids);
+    }
 
-        $ipn->single($input, $ids, $objects, FALSE, FALSE);
-        $returnURL = $this->base64_url_decode($input['returnURL']);
+    /**
+     * Set a field to the specified value.  Value must be a scalar (int,
+     * float, string, or boolean)
+     *
+     * @param string $field
+     * @param string $value
+     *
+     */
+    public function _setParam(string $field, string $value) {
+        $this->_params[$field] = $value;
+    }
 
-        // Print the tpl to redirect to success
-        $template = CRM_Core_Smarty::singleton();
-        $template->assign('url', $returnURL);
-        print $template->fetch('CRM/Core/Payment/BbpriorityCash.tpl');
+    function base64_url_encode($input) {
+        return strtr(base64_encode($input), '+/', '-_');
+    }
 
-        CRM_Utils_System::civiExit();
+    function base64_url_decode($input) {
+        return base64_decode(strtr($input, '-_', '+/'));
     }
 
 }
