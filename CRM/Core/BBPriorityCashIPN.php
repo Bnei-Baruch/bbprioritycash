@@ -103,7 +103,7 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
     }
 
     function base64_url_decode($input) {
-        return base64_decode(strtr($input, '-_', '+/'));
+        return base64_decode($input);
     }
 
     private function getContributionStatus($contribution): string {
