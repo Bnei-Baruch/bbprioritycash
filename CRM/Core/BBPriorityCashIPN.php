@@ -10,24 +10,25 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
 
     function main(&$paymentProcessor, &$input, &$ids): void {
         try {
-            $contributionID = $input['contributionID'];
-            $contribution = $this->getContribution($contributionID);
+            $contributionStatuses = array_flip(CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'validate'));
+            $contributionID = self::retrieve('contributionID', 'Integer');
+            $contactID = self::retrieve('contactID', 'Integer');
+            $contribution = $this->getContribution($contributionID, $contactID);
 
-            if ($this->getContributionStatus($contribution) === 'Completed') {
+            $statusID = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution',
+                $contribution->id, 'contribution_status_id'
+            );
+            if ($statusID === $contributionStatuses['Completed']) {
                 Civi::log('BBPCC IPN')->debug('returning since contribution has already been handled');
                 return;
             }
-
-            Contribution::update(FALSE)
-                ->addWhere('id', '=', $contributionID)
-                ->setValues([
-                    'contribution_status_id:name' => 'Completed',
-                    'txrn_id' => 'Cash',
-                ])->execute();
+            $contribution->contribution_status_id = $contributionStatuses['Completed'];
+            $contribution->trxn_id = 'Cash-' . $contribution->invoice_id;
+            $contribution->update();
 
             echo("bbpriorityCC IPN success");
             $this->redirectSuccess($input);
-            CRM_Utils_System::civiExit();
+            exit();
         } catch (CRM_Core_Exception $e) {
             Civi::log('BBPCC IPN')->debug($e->getMessage());
             echo 'Invalid or missing data';
@@ -87,30 +88,19 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
         return $value;
     }
 
-    private function getContribution($contribution_id) {
-        // Check if the contribution exists
-        // make sure contribution exists and is valid
-        $contribution = Contribution::get(FALSE)
-            ->addWhere('id', '=', $contribution_id)
-            ->addSelect('*')
-            ->addSelect('contribution_status_id:name')
-            ->execute()->first();
-        if (empty($contribution)) {
-            $input = $ids = array();
-            throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . $contribution_id, NULL,
-                ['context' =>
-                    'Could not find contribution record: ' . $contribution_id . ' in IPN request: '
-                    . print_r($this->getInput($input, $ids), TRUE)
-                ]);
+    private function getContribution($contribution_id, $contactID) {
+        $this->contribution = new CRM_Contribute_BAO_Contribution();
+        $this->contribution->id = $contribution_id;
+        if (!$this->contribution->find(TRUE)) {
+            throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . (int) $this->contribution->id, NULL, ['context' => "Could not find contribution record: {$this->contribution->id} in IPN request: "]);
         }
-        return $contribution;
+        if ((int) $this->contribution->contact_id !== $contactID) {
+            Civi::log("Contact ID in IPN not found but contact_id found in contribution.");
+        }
+        return $this->contribution;
     }
 
     function base64_url_decode($input) {
         return base64_decode($input);
-    }
-
-    private function getContributionStatus($contribution): string {
-        return $contribution['contribution_status_id:name'];
     }
 }
