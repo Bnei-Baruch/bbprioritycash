@@ -18,8 +18,12 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
                 return;
             }
 
-            $input['amount'] = $contribution['total_amount'];
-            $contribution['txrn_id'] = 'Cash';
+            Contribution::update(FALSE)
+                ->addWhere('id', '=', $contributionID)
+                ->setValues([
+                    'contribution_status_id:name' => 'Completed',
+                    'txrn_id' => 'Cash',
+                ])->execute();
 
             echo("bbpriorityCC IPN success");
             $this->redirectSuccess($input);
