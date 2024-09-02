@@ -19,21 +19,19 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
                 $contribution->id, 'contribution_status_id'
             );
             if ($statusID === $contributionStatuses['Completed']) {
-                Civi::log('BBPCC IPN')->debug('returning since contribution has already been handled');
+                Civi::log('BBPCash IPN')->debug('returning since contribution has already been handled');
                 return;
             }
             $contribution->contribution_status_id = $contributionStatuses['Completed'];
             $contribution->trxn_id = 'Cash-' . $contribution->invoice_id;
-            $contribution->save(false);
+            $contribution->update();
 
-            echo("bbpriorityCC IPN success");
+            echo("bbpriorityCash IPN success");
             $this->redirectSuccess($input);
-            exit();
         } catch (CRM_Core_Exception $e) {
-            Civi::log('BBPCC IPN')->debug($e->getMessage());
+            Civi::log('BBPCash IPN')->debug($e->getMessage());
             echo 'Invalid or missing data';
         }
-        CRM_Utils_System::civiExit();
     }
 
     function getInput(&$input, &$ids) {
@@ -92,7 +90,7 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
         $contribution = new CRM_Contribute_BAO_Contribution();
         $contribution->id = $contribution_id;
         if (!$contribution->find(TRUE)) {
-            throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . (int) $this->contribution->id, NULL, ['context' => "Could not find contribution record: {$this->contribution->id} in IPN request: "]);
+            throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . (int) $contribution->id, NULL, ['context' => "Could not find contribution record: {$contribution->id} in IPN request: "]);
         }
         if ((int) $contribution->contact_id !== $contactID) {
             Civi::log("Contact ID in IPN not found but contact_id found in contribution.");

@@ -1,0 +1,15 @@
+{
+	"name": "bbpriority/cash",
+	"description": "(BBPCash) BB Priority Cash Payment Processor",
+	"version": "2.0.0",
+	"type": "civicrm-ext",
+	"homepage": "https://github.com/Bnei-Baruch/bbprioritycash",
+	"license": "AGPL-3.0",
+	"authors": [
+		{
+			"name": "Gregory Shilin",
+			"email": "gshilin@gmail.com",
+			"role": "developer"
+		}
+	]
+}

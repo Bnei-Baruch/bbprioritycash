@@ -145,14 +145,7 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment {
         $ipnClass->main($this->_paymentProcessor, $input, $ids);
     }
 
-    /**
-     * Set a field to the specified value.  Value must be a scalar (int,
-     * float, string, or boolean)
-     *
-     * @param string $field
-     * @param string $value
-     *
-     */
+
     public function _setParam(string $field, string $value) {
         $this->_params[$field] = $value;
     }
@@ -160,4 +153,9 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment {
     function base64_url_encode($input) {
         return strtr(base64_encode($input), '+/', '-_');
     }
+
+    function base64_url_decode($input) {
+        return base64_decode(strtr($input, '-_', '+/'));
+    }
+
 }
