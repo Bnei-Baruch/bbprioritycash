@@ -8,13 +8,13 @@
     <author>Gregory Shilin</author>
     <email>gshilin@gmail.com</email>
   </maintainer>
-  <releaseDate>2017-11-12</releaseDate>
+  <releaseDate>2024-09-02</releaseDate>
   <version>2.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>7.4</ver>
+    <ver>5.74</ver>
   </compatibility>
-  <comments>This is a tested module</comments>
+  <comments>This module was updated to 5.74.4</comments>
   <civix>
     <namespace>CRM/BbpriorityCash</namespace>
   </civix>

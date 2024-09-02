@@ -3,7 +3,7 @@
 	"description": "(BBPCash) BB Priority Cash Payment Processor",
 	"version": "2.0.0",
 	"type": "civicrm-ext",
-	"homepage": "https://github.com/Bnei-Baruch/bbprioritycash",
+	"homepage": "https://github.com/Bnei-Baruch/bbpriorityCash",
 	"license": "AGPL-3.0",
 	"authors": [
 		{
