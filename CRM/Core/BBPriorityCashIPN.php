@@ -26,8 +26,8 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
             $contribution->trxn_id = 'Cash-' . $contribution->invoice_id;
             $contribution->update();
 
-            echo("bbpriorityCash IPN success");
             $this->redirectSuccess($input);
+	    CRM_Utils_System::civiExit();
         } catch (CRM_Core_Exception $e) {
             Civi::log('BBPCash IPN')->debug($e->getMessage());
             echo 'Invalid or missing data';
@@ -66,7 +66,17 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
     }
 
     function redirectSuccess(&$input): void {
-        $returnURL = $this->base64_url_decode($input['returnURL']);
+	$url = $this->base64_url_decode($input['returnURL']);
+        $key = "success";
+        $value = "1";
+        $url = preg_replace('/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&');
+        $url = substr($url, 0, -1);
+        if (strpos($url, '?') === false) {
+            $returnURL = ($url . '?' . $key . '=' . $value);
+        } else {
+            $returnURL = ($url . '&' . $key . '=' . $value);
+        }
+
 
         // Print the tpl to redirect to success
         $template = CRM_Core_Smarty::singleton();
