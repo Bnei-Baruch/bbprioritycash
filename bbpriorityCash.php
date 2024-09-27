@@ -17,7 +17,6 @@ function bbpriorityCash_civicrm_config(&$config) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function bbpriorityCash_civicrm_xmlMenu(&$files) {
-  _bbpriorityCash_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -60,7 +59,6 @@ function bbpriorityCash_civicrm_install() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postInstall
  */
 function bbpriorityCash_civicrm_postInstall() {
-  _bbpriorityCash_civix_civicrm_postInstall();
 }
 
 /**
@@ -84,7 +82,6 @@ function bbpriorityCash_civicrm_uninstall() {
     civicrm_api('PaymentProcessorType', 'delete', $params);
   }
 
-  _bbpriorityCash_civix_civicrm_uninstall();
 }
 
 /**
@@ -102,7 +99,6 @@ function bbpriorityCash_civicrm_enable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  */
 function bbpriorityCash_civicrm_disable() {
-  _bbpriorityCash_civix_civicrm_disable();
 }
 
 /**
@@ -111,7 +107,7 @@ function bbpriorityCash_civicrm_disable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function bbpriorityCash_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _bbpriorityCash_civix_civicrm_upgrade($op, $queue);
+  return;
 }
 
 /**
@@ -123,7 +119,6 @@ function bbpriorityCash_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
 function bbpriorityCash_civicrm_managed(&$entities) {
-  _bbpriorityCash_civix_civicrm_managed($entities);
 }
 
 /**
@@ -136,7 +131,6 @@ function bbpriorityCash_civicrm_managed(&$entities) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function bbpriorityCash_civicrm_caseTypes(&$caseTypes) {
-  _bbpriorityCash_civix_civicrm_caseTypes($caseTypes);
 }
 
 /**
@@ -150,7 +144,6 @@ function bbpriorityCash_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
  */
 function bbpriorityCash_civicrm_angularModules(&$angularModules) {
-  _bbpriorityCash_civix_civicrm_angularModules($angularModules);
 }
 
 /**
@@ -159,7 +152,6 @@ function bbpriorityCash_civicrm_angularModules(&$angularModules) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
 function bbpriorityCash_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _bbpriorityCash_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 // --- Functions below this ship commented out. Uncomment as required. ---
