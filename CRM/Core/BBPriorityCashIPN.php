@@ -27,7 +27,7 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
             $contribution->update();
 
             $this->redirectSuccess($input);
-	    CRM_Utils_System::civiExit();
+            CRM_Utils_System::civiExit();
         } catch (CRM_Core_Exception $e) {
             Civi::log('BBPCash IPN')->debug($e->getMessage());
             echo 'Invalid or missing data';
@@ -66,7 +66,7 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
     }
 
     function redirectSuccess(&$input): void {
-	$url = $this->base64_url_decode($input['returnURL']);
+        $url = $this->base64_url_decode($input['returnURL']);
         $key = "success";
         $value = "1";
         $url = preg_replace('/(.*)(?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&');
@@ -100,15 +100,16 @@ class CRM_Core_Payment_BBPriorityCashIPN extends CRM_Core_Payment_BaseIPN {
         $contribution = new CRM_Contribute_BAO_Contribution();
         $contribution->id = $contribution_id;
         if (!$contribution->find(TRUE)) {
-            throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . (int) $contribution->id, NULL, ['context' => "Could not find contribution record: {$contribution->id} in IPN request: "]);
+            throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . (int)$contribution->id, NULL, ['context' => "Could not find contribution record: {$contribution->id} in IPN request: "]);
         }
-        if ((int) $contribution->contact_id !== $contactID) {
+        if ((int)$contribution->contact_id !== $contactID) {
             Civi::log("Contact ID in IPN not found but contact_id found in contribution.");
         }
         return $contribution;
     }
 
     function base64_url_decode($input) {
-        return base64_decode($input);
+        return base64_decode(strstr($input, '-_', '+/:w
+        '));
     }
 }
