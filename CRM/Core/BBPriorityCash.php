@@ -90,8 +90,9 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment {
         }
         $this->_component = $component;
 
-        if (array_key_exists('webform_redirect_success', $params)) {
-            $returnURL = $params['webform_redirect_success'];
+        if (array_key_exists('successURL', $params)) {
+            $returnURL = $params['successURL'];
+            $cancelURL = $params['cancelURL'];
         } else {
             $url = ($component == 'event') ? 'civicrm/event/register' : 'civicrm/contribute/transact';
             $returnURL = CRM_Utils_System::url($url,
@@ -124,7 +125,7 @@ class CRM_Core_BBPriorityCash extends CRM_Core_Payment {
             }
         }
 
-        global $base_url;
+        $base_url = CRM_Utils_System::baseURL();
         $merchantUrl = $base_url . '/civicrm/payment/ipn?processor_name=BBPCash&mode=' . $this->_mode
             . '&md=' . $component . '&qfKey=' . $params["qfKey"] . '&' . $merchantUrlParams
             . '&returnURL=' . $this->base64_url_encode($returnURL);
